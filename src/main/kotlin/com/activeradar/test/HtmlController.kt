@@ -8,11 +8,15 @@ import org.springframework.web.bind.annotation.PathVariable
 import java.lang.IllegalArgumentException
 
 @Controller
-class HtmlController(private val repository: ArticleRepository, private val markdownConverter: MarkdownConverter) {
+class HtmlController(
+    private val repository: ArticleRepository,
+    private val markdownConverter: MarkdownConverter,
+    private val properties: AppProperties) {
 
     @GetMapping("/")
     fun blog(model: Model):String {
         model["title"] = "Blog"
+        model["banner"] = properties.banner
         model["articles"] = repository.findAllByOrderByAddedAtDesc().map { it.render() }
         return "blog"
     }
