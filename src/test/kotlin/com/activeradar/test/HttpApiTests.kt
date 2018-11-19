@@ -2,6 +2,7 @@ package com.activeradar.test
 
 import com.nhaarman.mockito_kotlin.any
 import com.nhaarman.mockito_kotlin.whenever
+import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import org.springframework.beans.factory.annotation.Autowired
@@ -25,10 +26,20 @@ class HttpApiTests(@Autowired val mockMvc:MockMvc) {
     @MockBean
     private lateinit var markdownConverter: MarkdownConverter
 
+    private lateinit var users:List<User>
+
+    @BeforeAll
+    fun setup() {
+        val user1 = User("testuser", "Test", "User")
+        val user2 = User("testuser2", "Test2", "User2")
+
+        users = listOf(user1, user2)
+    }
+
     @Test
     fun `List articles`() {
         //TODO: Figure out how to use the setup method to provide user
-        val user = User("testuser", "Test", "User")
+        val user = users[0]
         val article1 = Article("Article 1", "Article 1 Headline", "Article 1 content", user, 1)
         val article2 = Article("Article 2", "Article 2 Headline", "Article 2 content", user, 2)
 
@@ -46,14 +57,11 @@ class HttpApiTests(@Autowired val mockMvc:MockMvc) {
 
     @Test
     fun `List users`() {
-        val user1 = User("testuser", "Test", "User")
-        val user2 = User("testuser2", "Test2", "User2")
-
-        whenever(userRepository.findAll()).thenReturn(listOf(user1, user2))
+        whenever(userRepository.findAll()).thenReturn(users)
         mockMvc.perform(get("/api/user/").accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk)
             .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
-            .andExpect(jsonPath("\$.[0].login").value(user1.login))
-            .andExpect(jsonPath("\$.[1].login").value(user2.login))
+            .andExpect(jsonPath("\$.[0].login").value(users[0].login))
+            .andExpect(jsonPath("\$.[1].login").value(users[1].login))
     }
 }
